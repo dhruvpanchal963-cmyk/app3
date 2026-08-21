@@ -16,147 +16,64 @@ st.set_page_config(
 
 
 # =========================================================
-# CUSTOM CSS
+# CLEAN CSS
+# ONLY KPI CARDS ARE CUSTOMIZED
 # =========================================================
 
 st.markdown("""
 <style>
 
-/* =====================================================
-   KEEP ORIGINAL DARK DASHBOARD
-===================================================== */
-
-.stApp {
-    background-color: #0e1117;
-}
-
-.block-container {
-    padding-top: 2rem;
-    padding-bottom: 3rem;
-}
-
-
-/* =====================================================
-   HEADINGS
-===================================================== */
-
-h1, h2, h3 {
-    color: #ffffff !important;
-}
-
-
-/* =====================================================
+/* =========================
    KPI CARDS
-   ONLY THESE CARDS ARE WHITE
-===================================================== */
+========================= */
 
 [data-testid="stMetric"] {
-    background-color: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 15px !important;
-    padding: 20px !important;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.20);
+    background: #ffffff !important;
+    border: 1px solid #e1e1e1 !important;
+    border-radius: 12px !important;
+    padding: 18px 20px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
 }
 
 
-/* =====================================================
-   KPI LABEL = BLACK
-===================================================== */
+/* KPI LABEL */
 
 [data-testid="stMetricLabel"] {
     color: #000000 !important;
+    opacity: 1 !important;
 }
 
 
-/* =====================================================
-   KPI VALUE = BLACK
-===================================================== */
+/* KPI NUMBER */
 
 [data-testid="stMetricValue"] {
     color: #000000 !important;
+    opacity: 1 !important;
 }
 
 
-/* =====================================================
-   KPI DELTA = BLACK
-===================================================== */
+/* KPI DELTA */
 
 [data-testid="stMetricDelta"] {
-    color: #000000 !important;
+    opacity: 1 !important;
 }
 
 
-/* =====================================================
-   SIDEBAR
-===================================================== */
-
-[data-testid="stSidebar"] {
-    background-color: #111827 !important;
-}
-
-[data-testid="stSidebar"] h1,
-[data-testid="stSidebar"] h2,
-[data-testid="stSidebar"] h3 {
-    color: #ffffff !important;
-}
-
-[data-testid="stSidebar"] p {
-    color: #ffffff !important;
-}
-
-[data-testid="stSidebar"] label {
-    color: #ffffff !important;
-}
-
-
-/* =====================================================
-   SIDEBAR INPUT LABELS
-===================================================== */
-
-.stSlider label,
-.stMultiSelect label,
-.stSelectbox label,
-.stTextInput label {
-    color: #ffffff !important;
-}
-
-
-/* =====================================================
-   TABS
-===================================================== */
-
-button[data-baseweb="tab"] {
-    color: #d1d5db !important;
-}
-
-button[data-baseweb="tab"][aria-selected="true"] {
-    color: #ffffff !important;
-}
-
-
-/* =====================================================
+/* =========================
    DOWNLOAD BUTTON
-===================================================== */
+========================= */
 
 .stDownloadButton button {
-    background-color: #2563eb !important;
-    color: #ffffff !important;
-    border-radius: 8px !important;
-    border: none !important;
     font-weight: 600 !important;
 }
 
-.stDownloadButton button:hover {
-    background-color: #1d4ed8 !important;
-}
 
+/* =========================
+   TABLE
+========================= */
 
-/* =====================================================
-   DIVIDER
-===================================================== */
-
-hr {
-    border-color: #374151 !important;
+[data-testid="stDataFrame"] {
+    border-radius: 10px !important;
 }
 
 </style>
@@ -172,15 +89,12 @@ def load_data():
 
     file_name = "AllMoviesDetails_20MB.xlsx"
 
-    df = pd.read_excel(
+    data = pd.read_excel(
         file_name,
         engine="openpyxl"
     )
 
-    # -----------------------------------------------------
-    # Convert numeric columns
-    # -----------------------------------------------------
-
+    # Numeric columns
     numeric_columns = [
         "budget",
         "revenue",
@@ -190,34 +104,28 @@ def load_data():
         "vote_count"
     ]
 
-    for column in numeric_columns:
+    for col in numeric_columns:
 
-        if column in df.columns:
+        if col in data.columns:
 
-            df[column] = pd.to_numeric(
-                df[column],
+            data[col] = pd.to_numeric(
+                data[col],
                 errors="coerce"
             )
 
-    # -----------------------------------------------------
     # Release date
-    # -----------------------------------------------------
+    if "release_date" in data.columns:
 
-    if "release_date" in df.columns:
-
-        df["release_date"] = pd.to_datetime(
-            df["release_date"],
+        data["release_date"] = pd.to_datetime(
+            data["release_date"],
             errors="coerce"
         )
 
-        df["release_year"] = (
-            df["release_date"].dt.year
+        data["release_year"] = (
+            data["release_date"].dt.year
         )
 
-    # -----------------------------------------------------
     # Text columns
-    # -----------------------------------------------------
-
     text_columns = [
         "title",
         "original_title",
@@ -226,21 +134,21 @@ def load_data():
         "original_language"
     ]
 
-    for column in text_columns:
+    for col in text_columns:
 
-        if column in df.columns:
+        if col in data.columns:
 
-            df[column] = (
-                df[column]
+            data[col] = (
+                data[col]
                 .fillna("Unknown")
                 .astype(str)
             )
 
-    return df
+    return data
 
 
 # =========================================================
-# LOAD DATA SAFELY
+# LOAD DATA
 # =========================================================
 
 try:
@@ -254,8 +162,8 @@ except FileNotFoundError:
     )
 
     st.info(
-        "Make sure AllMoviesDetails_20MB.xlsx "
-        "is in the same GitHub folder as app3.py."
+        "Keep AllMoviesDetails_20MB.xlsx "
+        "in the same folder as app3.py."
     )
 
     st.stop()
@@ -263,25 +171,24 @@ except FileNotFoundError:
 except Exception as e:
 
     st.error(
-        f"❌ Error loading dataset: {e}"
+        f"❌ Error loading Excel file: {e}"
     )
 
     st.stop()
 
 
 # =========================================================
-# HEADER
+# TITLE
 # =========================================================
 
 st.title("🎬 Movie Analytics Dashboard")
 
-st.markdown(
-    "### Interactive Movie Data Analysis & Exploration"
+st.subheader(
+    "Interactive Movie Data Analysis & Exploration"
 )
 
 st.caption(
-    f"📊 {len(df):,} movies • "
-    f"{len(df.columns)} columns"
+    f"📊 {len(df):,} movies • {len(df.columns)} columns"
 )
 
 st.divider()
@@ -298,7 +205,7 @@ st.sidebar.title("🎛️ Dashboard Filters")
 # YEAR FILTER
 # =========================================================
 
-st.sidebar.markdown("### 📅 Release Year")
+st.sidebar.subheader("📅 Release Year")
 
 if "release_year" in df.columns:
 
@@ -326,10 +233,10 @@ else:
 
 
 # =========================================================
-# LANGUAGE FILTER
+# LANGUAGE
 # =========================================================
 
-st.sidebar.markdown("### 🌍 Language")
+st.sidebar.subheader("🌍 Language")
 
 if "original_language" in df.columns:
 
@@ -351,10 +258,10 @@ else:
 
 
 # =========================================================
-# STATUS FILTER
+# STATUS
 # =========================================================
 
-st.sidebar.markdown("### 🎥 Movie Status")
+st.sidebar.subheader("🎥 Movie Status")
 
 if "status" in df.columns:
 
@@ -376,10 +283,10 @@ else:
 
 
 # =========================================================
-# RATING FILTER
+# RATING
 # =========================================================
 
-st.sidebar.markdown("### ⭐ Rating")
+st.sidebar.subheader("⭐ Rating")
 
 rating_range = st.sidebar.slider(
     "Rating Range",
@@ -442,90 +349,80 @@ if "vote_average" in filtered_df.columns:
 st.header("📊 Dataset Overview")
 
 
-col1, col2, col3, col4, col5 = st.columns(5)
+c1, c2, c3, c4, c5 = st.columns(5)
 
 
-# Total Movies
+# Total movies
 
-total_movies = len(filtered_df)
-
-col1.metric(
+c1.metric(
     "🎬 Total Movies",
-    f"{total_movies:,}"
+    f"{len(filtered_df):,}"
 )
 
 
-# Average Rating
+# Average rating
 
 if "vote_average" in filtered_df.columns:
 
-    avg_rating = filtered_df[
-        "vote_average"
-    ].mean()
+    avg_rating = filtered_df["vote_average"].mean()
 
 else:
 
     avg_rating = 0
 
 
-col2.metric(
+c2.metric(
     "⭐ Average Rating",
     f"{avg_rating:.2f}"
 )
 
 
-# Average Popularity
+# Average popularity
 
 if "popularity" in filtered_df.columns:
 
-    avg_popularity = filtered_df[
-        "popularity"
-    ].mean()
+    avg_popularity = filtered_df["popularity"].mean()
 
 else:
 
     avg_popularity = 0
 
 
-col3.metric(
+c3.metric(
     "🔥 Avg Popularity",
     f"{avg_popularity:.2f}"
 )
 
 
-# Total Revenue
+# Revenue
 
 if "revenue" in filtered_df.columns:
 
-    total_revenue = filtered_df[
-        "revenue"
-    ].sum()
+    total_revenue = filtered_df["revenue"].sum()
 
 else:
 
     total_revenue = 0
 
 
-col4.metric(
+c4.metric(
     "💰 Total Revenue",
     f"${total_revenue:,.0f}"
 )
 
 
-# Average Runtime
+# Runtime
 
 if "runtime" in filtered_df.columns:
 
-    avg_runtime = filtered_df[
-        "runtime"
-    ].mean()
+    avg_runtime = filtered_df["runtime"].mean()
 
 else:
 
     avg_runtime = 0
 
 
-col5.metric(
+c5.metric(
     "⏱️ Avg Runtime",
     f"{avg_runtime:.0f} min"
 )
@@ -538,74 +435,58 @@ col5.metric(
 st.subheader("📌 Additional Statistics")
 
 
-a1, a2, a3, a4 = st.columns(4)
+s1, s2, s3, s4 = st.columns(4)
 
 
-# Highest Rating
+# Highest rating
 
-if "vote_average" in filtered_df.columns:
+highest_rating = (
+    filtered_df["vote_average"].max()
+    if "vote_average" in filtered_df.columns
+    else 0
+)
 
-    highest_rating = filtered_df[
-        "vote_average"
-    ].max()
-
-else:
-
-    highest_rating = 0
-
-
-a1.metric(
+s1.metric(
     "🏆 Highest Rating",
     f"{highest_rating:.2f}"
 )
 
 
-# Highest Popularity
+# Highest popularity
 
-if "popularity" in filtered_df.columns:
+highest_popularity = (
+    filtered_df["popularity"].max()
+    if "popularity" in filtered_df.columns
+    else 0
+)
 
-    highest_popularity = filtered_df[
-        "popularity"
-    ].max()
-
-else:
-
-    highest_popularity = 0
-
-
-a2.metric(
+s2.metric(
     "🔥 Highest Popularity",
     f"{highest_popularity:.2f}"
 )
 
 
-# Average Votes
+# Average votes
 
-if "vote_count" in filtered_df.columns:
+average_votes = (
+    filtered_df["vote_count"].mean()
+    if "vote_count" in filtered_df.columns
+    else 0
+)
 
-    average_votes = filtered_df[
-        "vote_count"
-    ].mean()
-
-else:
-
-    average_votes = 0
-
-
-a3.metric(
+s3.metric(
     "👥 Average Votes",
     f"{average_votes:,.0f}"
 )
 
 
-# Missing Values
+# Missing values
 
 missing_values = int(
     filtered_df.isna().sum().sum()
 )
 
-
-a4.metric(
+s4.metric(
     "⚠️ Missing Values",
     f"{missing_values:,}"
 )
@@ -618,20 +499,18 @@ st.divider()
 # TABS
 # =========================================================
 
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
-    [
-        "📈 Trends",
-        "⭐ Ratings",
-        "🎭 Genres",
-        "💰 Finance",
-        "🌍 Languages",
-        "📋 Dataset"
-    ]
-)
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    "📈 Trends",
+    "⭐ Ratings",
+    "🎭 Genres",
+    "💰 Finance",
+    "🌍 Languages",
+    "📋 Dataset"
+])
 
 
 # =========================================================
-# TAB 1 - TRENDS
+# TRENDS
 # =========================================================
 
 with tab1:
@@ -639,34 +518,22 @@ with tab1:
     st.header("📈 Movie Release Trends")
 
 
-    # Movies per year
-
     if "release_year" in filtered_df.columns:
 
-        yearly_movies = (
+        yearly = (
             filtered_df
-            .dropna(
-                subset=["release_year"]
-            )
+            .dropna(subset=["release_year"])
             .groupby("release_year")
             .size()
-            .reset_index(
-                name="Movies"
-            )
+            .reset_index(name="Movies")
         )
 
         fig = px.line(
-            yearly_movies,
+            yearly,
             x="release_year",
             y="Movies",
             markers=True,
             title="🎬 Movies Released by Year"
-        )
-
-        fig.update_layout(
-            template="plotly_dark",
-            xaxis_title="Release Year",
-            yaxis_title="Number of Movies"
         )
 
         st.plotly_chart(
@@ -674,8 +541,6 @@ with tab1:
             use_container_width=True
         )
 
-
-    # Average rating by year
 
     if {
         "release_year",
@@ -705,12 +570,6 @@ with tab1:
             title="⭐ Average Rating by Year"
         )
 
-        fig.update_layout(
-            template="plotly_dark",
-            xaxis_title="Release Year",
-            yaxis_title="Average Rating"
-        )
-
         st.plotly_chart(
             fig,
             use_container_width=True
@@ -718,20 +577,19 @@ with tab1:
 
 
 # =========================================================
-# TAB 2 - RATINGS
+# RATINGS
 # =========================================================
 
 with tab2:
 
     st.header("⭐ Rating Analysis")
 
+    r1, r2 = st.columns(2)
 
-    rating_col1, rating_col2 = st.columns(2)
 
+    # Rating distribution
 
-    # Rating Distribution
-
-    with rating_col1:
+    with r1:
 
         if "vote_average" in filtered_df.columns:
 
@@ -742,10 +600,38 @@ with tab2:
                 title="⭐ Rating Distribution"
             )
 
-            fig.update_layout(
-                template="plotly_dark",
-                xaxis_title="Rating",
-                yaxis_title="Number of Movies"
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
+
+
+    # Votes vs rating
+
+    with r2:
+
+        required = {
+            "vote_count",
+            "vote_average"
+        }
+
+        if required.issubset(filtered_df.columns):
+
+            sample = filtered_df.sample(
+                min(5000, len(filtered_df)),
+                random_state=42
+            )
+
+            fig = px.scatter(
+                sample,
+                x="vote_count",
+                y="vote_average",
+                hover_name=(
+                    "title"
+                    if "title" in sample.columns
+                    else None
+                ),
+                title="👥 Vote Count vs Rating"
             )
 
             st.plotly_chart(
@@ -754,56 +640,7 @@ with tab2:
             )
 
 
-    # Votes vs Rating
-
-    with rating_col2:
-
-        required = {
-            "vote_count",
-            "vote_average",
-            "popularity"
-        }
-
-        if required.issubset(
-            filtered_df.columns
-        ):
-
-            if len(filtered_df) > 0:
-
-                sample = filtered_df.sample(
-                    min(
-                        5000,
-                        len(filtered_df)
-                    ),
-                    random_state=42
-                )
-
-                fig = px.scatter(
-                    sample,
-                    x="vote_count",
-                    y="vote_average",
-                    size="popularity",
-                    hover_name="title"
-                    if "title" in sample.columns
-                    else None,
-                    title="👥 Votes vs Rating"
-                )
-
-                fig.update_layout(
-                    template="plotly_dark"
-                )
-
-                st.plotly_chart(
-                    fig,
-                    use_container_width=True
-                )
-
-
-    # Top Rated Movies
-
-    st.subheader(
-        "🏆 Top Rated Movies"
-    )
+    st.subheader("🏆 Top Rated Movies")
 
 
     if {
@@ -812,7 +649,7 @@ with tab2:
         "vote_count"
     }.issubset(filtered_df.columns):
 
-        top_rated = (
+        top_movies = (
             filtered_df
             .sort_values(
                 "vote_average",
@@ -829,14 +666,14 @@ with tab2:
         )
 
         st.dataframe(
-            top_rated,
+            top_movies,
             use_container_width=True,
             hide_index=True
         )
 
 
 # =========================================================
-# TAB 3 - GENRES
+# GENRES
 # =========================================================
 
 with tab3:
@@ -846,7 +683,7 @@ with tab3:
 
     if "genres" in filtered_df.columns:
 
-        genre_data = (
+        genres = (
             filtered_df["genres"]
             .fillna("Unknown")
             .astype(str)
@@ -855,21 +692,14 @@ with tab3:
                 "|",
                 regex=False
             )
-        )
-
-        genre_series = (
-            genre_data
             .str.split("|")
             .explode()
             .str.strip()
         )
 
         genre_counts = (
-            genre_series
-            .replace(
-                "",
-                "Unknown"
-            )
+            genres
+            .replace("", "Unknown")
             .value_counts()
             .head(20)
             .reset_index()
@@ -881,12 +711,10 @@ with tab3:
         ]
 
 
-        genre_col1, genre_col2 = st.columns(2)
+        g1, g2 = st.columns(2)
 
 
-        # Bar chart
-
-        with genre_col1:
+        with g1:
 
             fig = px.bar(
                 genre_counts.sort_values(
@@ -898,29 +726,19 @@ with tab3:
                 title="🎭 Most Common Genres"
             )
 
-            fig.update_layout(
-                template="plotly_dark"
-            )
-
             st.plotly_chart(
                 fig,
                 use_container_width=True
             )
 
 
-        # Pie chart
-
-        with genre_col2:
+        with g2:
 
             fig = px.pie(
                 genre_counts.head(10),
                 values="Movies",
                 names="Genre",
-                title="🎬 Top 10 Genre Distribution"
-            )
-
-            fig.update_layout(
-                template="plotly_dark"
+                title="🎬 Top 10 Genres"
             )
 
             st.plotly_chart(
@@ -929,9 +747,7 @@ with tab3:
             )
 
 
-        st.subheader(
-            "📋 Genre Statistics"
-        )
+        st.subheader("📋 Genre Statistics")
 
         st.dataframe(
             genre_counts,
@@ -941,7 +757,7 @@ with tab3:
 
 
 # =========================================================
-# TAB 4 - FINANCE
+# FINANCE
 # =========================================================
 
 with tab4:
@@ -961,42 +777,36 @@ with tab4:
 
 
         finance["profit"] = (
-            finance["revenue"] -
-            finance["budget"]
+            finance["revenue"]
+            - finance["budget"]
         )
 
 
-        finance1, finance2, finance3 = st.columns(3)
+        f1, f2, f3 = st.columns(3)
 
 
-        finance1.metric(
+        f1.metric(
             "💵 Total Budget",
             f"${finance['budget'].sum():,.0f}"
         )
 
 
-        finance2.metric(
+        f2.metric(
             "💰 Total Revenue",
             f"${finance['revenue'].sum():,.0f}"
         )
 
 
-        finance3.metric(
+        f3.metric(
             "📈 Total Profit",
             f"${finance['profit'].sum():,.0f}"
         )
 
 
-        st.divider()
-
-
         if len(finance) > 0:
 
             sample = finance.sample(
-                min(
-                    5000,
-                    len(finance)
-                ),
+                min(5000, len(finance)),
                 random_state=42
             )
 
@@ -1005,19 +815,12 @@ with tab4:
                 sample,
                 x="budget",
                 y="revenue",
-                size="popularity"
-                if "popularity" in sample.columns
-                else None,
-                hover_name="title"
-                if "title" in sample.columns
-                else None,
-                log_x=True,
-                log_y=True,
+                hover_name=(
+                    "title"
+                    if "title" in sample.columns
+                    else None
+                ),
                 title="💰 Budget vs Revenue"
-            )
-
-            fig.update_layout(
-                template="plotly_dark"
             )
 
             st.plotly_chart(
@@ -1031,15 +834,15 @@ with tab4:
             )
 
 
-            profit_columns = [
-                column
-                for column in [
+            columns = [
+                c
+                for c in [
                     "title",
                     "budget",
                     "revenue",
                     "profit"
                 ]
-                if column in finance.columns
+                if c in finance.columns
             ]
 
 
@@ -1049,7 +852,7 @@ with tab4:
                     "profit",
                     ascending=False
                 )
-                [profit_columns]
+                [columns]
                 .head(20)
             )
 
@@ -1062,14 +865,12 @@ with tab4:
 
 
 # =========================================================
-# TAB 5 - LANGUAGES
+# LANGUAGES
 # =========================================================
 
 with tab5:
 
-    st.header(
-        "🌍 Original Language Analysis"
-    )
+    st.header("🌍 Language Analysis")
 
 
     if "original_language" in filtered_df.columns:
@@ -1096,10 +897,6 @@ with tab5:
             title="🌍 Movies by Original Language"
         )
 
-        fig.update_layout(
-            template="plotly_dark"
-        )
-
         st.plotly_chart(
             fig,
             use_container_width=True
@@ -1118,18 +915,16 @@ with tab5:
 
 
 # =========================================================
-# TAB 6 - DATASET EXPLORER
+# DATASET EXPLORER
 # =========================================================
 
 with tab6:
 
-    st.header(
-        "📋 Movie Dataset Explorer"
-    )
+    st.header("📋 Movie Dataset Explorer")
 
 
     search = st.text_input(
-        "🔎 Search Movie by Title"
+        "🔎 Search Movie Title"
     )
 
 
@@ -1173,23 +968,19 @@ with tab6:
 
 
     available_columns = [
-        column
-        for column in preferred_columns
-        if column in display_df.columns
+        c
+        for c in preferred_columns
+        if c in display_df.columns
     ]
 
 
     st.dataframe(
-        display_df[
-            available_columns
-        ],
+        display_df[available_columns],
         use_container_width=True,
         height=550,
         hide_index=True
     )
 
-
-    # Download CSV
 
     csv_data = display_df.to_csv(
         index=False
@@ -1197,7 +988,7 @@ with tab6:
 
 
     st.download_button(
-        label="📥 Download Filtered CSV",
+        "📥 Download Filtered CSV",
         data=csv_data,
         file_name="movie_analysis_filtered.csv",
         mime="text/csv"
@@ -1205,7 +996,7 @@ with tab6:
 
 
 # =========================================================
-# CORRELATION ANALYSIS
+# CORRELATION
 # =========================================================
 
 st.divider()
@@ -1223,18 +1014,18 @@ correlation_columns = [
 ]
 
 
-available_correlation = [
-    column
-    for column in correlation_columns
-    if column in filtered_df.columns
+available_corr = [
+    c
+    for c in correlation_columns
+    if c in filtered_df.columns
 ]
 
 
-if len(available_correlation) >= 2:
+if len(available_corr) >= 2:
 
     correlation = (
         filtered_df[
-            available_correlation
+            available_corr
         ]
         .corr()
     )
@@ -1245,10 +1036,6 @@ if len(available_correlation) >= 2:
         text_auto=".2f",
         aspect="auto",
         title="🔗 Movie Variable Correlation"
-    )
-
-    fig.update_layout(
-        template="plotly_dark"
     )
 
     st.plotly_chart(
@@ -1283,9 +1070,9 @@ missing.columns = [
 
 
 missing["Missing %"] = (
-    missing["Missing Values"] /
-    len(df) *
-    100
+    missing["Missing Values"]
+    / len(df)
+    * 100
 ).round(2)
 
 
@@ -1303,6 +1090,6 @@ st.dataframe(
 st.divider()
 
 st.caption(
-    "🎬 Movie Analytics Dashboard | "
+    "🎬 Movie Analytics Dashboard • "
     "Python • Streamlit • Pandas • Plotly"
 )
